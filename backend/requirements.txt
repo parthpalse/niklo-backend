@@ -1,0 +1,8 @@
+flask
+requests
+python-dotenv
+googlemaps
+firebase-admin
+scikit-learn
+pandas
+gunicorn
