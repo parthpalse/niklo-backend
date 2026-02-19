@@ -1,55 +1,75 @@
-import googlemaps
-from datetime import datetime
+import requests
 from config import Config
+
+# ORS API base URL
+ORS_BASE = 'https://api.openrouteservice.org'
 
 class TrafficService:
     def __init__(self):
-        self._gmaps = None
+        self.api_key = None  # Lazy init
 
-    @property
-    def gmaps(self):
-        if self._gmaps is None:
-            if not Config.GOOGLE_MAPS_API_KEY:
-                raise ValueError("GOOGLE_MAPS_API_KEY is not set")
-            self._gmaps = googlemaps.Client(key=Config.GOOGLE_MAPS_API_KEY)
-        return self._gmaps
+    def _get_key(self):
+        if not Config.ORS_API_KEY:
+            raise ValueError("ORS_API_KEY is not set in environment variables")
+        return Config.ORS_API_KEY
 
+    def _geocode(self, address):
+        """Convert address string to [longitude, latitude] using ORS Geocoding."""
+        url = f"{ORS_BASE}/geocode/search"
+        params = {
+            'api_key': self._get_key(),
+            'text': address,
+            'size': 1
+        }
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        features = resp.json().get('features', [])
+        if not features:
+            raise ValueError(f"Could not geocode address: {address}")
+        coords = features[0]['geometry']['coordinates']  # [lng, lat]
+        return coords
 
     def get_travel_time(self, origin, destination, mode='driving', departure_time=None):
         """
-        Fetches travel time from Google Maps Distance Matrix API.
-        :param origin: Starting location (string or tuple)
-        :param destination: Destination location (string or tuple)
-        :param mode: Mode of transport (driving, walking, bicycling, transit)
-        :param departure_time: datetime object (defaults to now)
-        :return: duration in seconds
+        Gets travel time using ORS Matrix API.
+        Returns duration in seconds and distance in km.
         """
-        if not departure_time:
-            departure_time = datetime.now()
-
         try:
-            result = self.gmaps.distance_matrix(
-                origins=[origin],
-                destinations=[destination],
-                mode=mode,
-                departure_time=departure_time
-            )
+            origin_coords = self._geocode(origin)
+            dest_coords = self._geocode(destination)
 
-            # Parse the result
-            if result['status'] == 'OK':
-                element = result['rows'][0]['elements'][0]
-                if element['status'] == 'OK':
-                    # duration_in_traffic is preferred if available (requires valid departure_time)
-                    duration = element.get('duration_in_traffic', element.get('duration'))
-                    return {
-                        'duration_seconds': duration['value'],
-                        'duration_text': duration['text'],
-                        'distance_text': element['distance']['text']
-                    }
-                else:
-                    return {'error': f"Element status: {element['status']}"}
-            else:
-                return {'error': f"API Error: {result['status']}"}
+            url = f"{ORS_BASE}/v2/matrix/driving-car"
+            headers = {
+                'Authorization': self._get_key(),
+                'Content-Type': 'application/json'
+            }
+            body = {
+                "locations": [origin_coords, dest_coords],
+                "metrics": ["duration", "distance"],
+                "units": "km"
+            }
 
+            resp = requests.post(url, json=body, headers=headers, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+
+            duration_seconds = data['durations'][0][1]
+            distance_km = data['distances'][0][1]
+
+            # Format nicely
+            duration_mins = int(duration_seconds / 60)
+            duration_text = f"{duration_mins} mins" if duration_mins < 60 else f"{duration_mins // 60}h {duration_mins % 60}m"
+            distance_text = f"{round(distance_km, 1)} km"
+
+            return {
+                'duration_seconds': int(duration_seconds),
+                'duration_text': duration_text,
+                'distance_text': distance_text
+            }
+
+        except ValueError as e:
+            return {'error': str(e)}
+        except requests.exceptions.HTTPError as e:
+            return {'error': f"ORS API error: {e.response.status_code} - {e.response.text[:200]}"}
         except Exception as e:
             return {'error': str(e)}
