@@ -4,7 +4,16 @@ from config import Config
 
 class TrafficService:
     def __init__(self):
-        self.gmaps = googlemaps.Client(key=Config.GOOGLE_MAPS_API_KEY)
+        self._gmaps = None
+
+    @property
+    def gmaps(self):
+        if self._gmaps is None:
+            if not Config.GOOGLE_MAPS_API_KEY:
+                raise ValueError("GOOGLE_MAPS_API_KEY is not set")
+            self._gmaps = googlemaps.Client(key=Config.GOOGLE_MAPS_API_KEY)
+        return self._gmaps
+
 
     def get_travel_time(self, origin, destination, mode='driving', departure_time=None):
         """
