@@ -47,6 +47,12 @@ STATION_COORDS = {
     'Kalyan':         [73.1291, 19.2437],
     'Vashi':          [72.9987, 19.0799],
     'Airoli':         [72.9999, 19.1548],
+    # KJSCE destination — hardcoded so Nominatim is never called for it
+    'KJSCE':                              [72.9041, 19.0712],
+    'K.J. Somaiya':                       [72.9041, 19.0712],
+    'KJ Somaiya':                         [72.9041, 19.0712],
+    'Somaiya':                            [72.9041, 19.0712],
+    'KJSCE, Vidyavihar West, Mumbai, Maharashtra': [72.9041, 19.0712],
 }
 
 # Fixed walk time: Vidyavihar station exit → KJSCE main gate (measured once)
