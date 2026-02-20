@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from services.traffic_service import TrafficService
+from services.traffic_service import TrafficService, VIDYAVIHAR_TO_KJSCE_WALK_MINS
 from services.train_service import TrainService
 from config import Config
 
@@ -83,11 +83,7 @@ class CommuteService:
             leg1_mins = (leg1['duration_seconds'] / 60
                          if 'error' not in leg1 else 15)
 
-            leg3 = self.traffic.get_travel_time(
-                f"Vidyavihar Railway Station, Mumbai", self.DESTINATION
-            )
-            leg3_mins = (leg3['duration_seconds'] / 60
-                         if 'error' not in leg3 else 5)
+            leg3_mins = VIDYAVIHAR_TO_KJSCE_WALK_MINS  # fixed walk: Vidyavihar stn → KJSCE gate
 
             # Latest the train can arrive at Vidyavihar
             # (subtract walking leg + delay buffer already baked into buffer)
