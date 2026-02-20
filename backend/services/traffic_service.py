@@ -46,6 +46,10 @@ STATION_COORDS = {
     'Thakurli':       [73.0983, 19.2185],
     'Kalyan':         [73.1291, 19.2437],
     'Vashi':          [72.9987, 19.0799],
+    'Turbhe':         [73.0163, 19.0782],
+    'Koparkhairane':  [73.0016, 19.1030],
+    'Ghansoli':       [72.9991, 19.1245],
+    'Rabale':         [72.9994, 19.1368],
     'Airoli':         [72.9999, 19.1548],
     # KJSCE destination — hardcoded so Nominatim is never called for it
     'KJSCE':                              [72.9041, 19.0712],
