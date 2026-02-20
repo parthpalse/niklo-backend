@@ -22,12 +22,9 @@ class CommuteService:
 
     # Keyword → nearest Central Line station
     STATION_MAP = {
+        # Central Line
         'thane':      'Thane',
         'mulund':     'Thane',
-        'airoli':     'Thane',
-        'ghansoli':   'Thane',
-        'koparkhairane':'Thane',
-        'turbhe':     'Thane',
         'dombivli':   'Dombivli',
         'kalyan':     'Kalyan',
         'ghatkopar':  'Ghatkopar',
@@ -36,6 +33,51 @@ class CommuteService:
         'csmt':       'CSMT',
         'fort':       'CSMT',
         'vidyavihar': 'Vidyavihar',
+
+        # Trans-Harbour Line
+        'airoli':        'Thane',
+        'rabale':        'Thane',
+        'ghansoli':      'Thane',
+        'koparkhairane': 'Thane',
+        'turbhe':        'Thane',
+        'vashi':         'Kurla', # Faster via Harbour -> Kurla than Thane
+
+        # Harbour Line (Maps mostly to Kurla)
+        'panvel':     'Kurla',
+        'nerul':      'Kurla',
+        'sanpada':    'Kurla',
+        'mankhurd':   'Kurla',
+        'govandi':    'Kurla',
+        'chembur':    'Kurla',
+        'chunabhatti':'Kurla',
+        'wadala':     'Kurla',
+
+        # Western Line (Maps to Dadar)
+        'churchgate': 'Dadar',
+        'marine lines': 'Dadar',
+        'charni road': 'Dadar',
+        'grant road': 'Dadar',
+        'mumbai central': 'Dadar',
+        'mahalaxmi':  'Dadar',
+        'lower parel': 'Dadar',
+        'prabhadevi': 'Dadar',
+        'matunga road':'Dadar',
+        'mahim':      'Dadar',
+        'bandra':     'Dadar',
+        'khar':       'Dadar',
+        'santacruz':  'Dadar',
+        'vile parle': 'Dadar',
+        'andheri':    'Dadar',
+        'jogeshwari': 'Dadar',
+        'goregaon':   'Dadar',
+        'malad':      'Dadar',
+        'kandivali':  'Dadar',
+        'borivali':   'Dadar',
+        'dahisar':    'Dadar',
+        'mira road':  'Dadar',
+        'bhayandar':  'Dadar',
+        'vasai':      'Dadar',
+        'virar':      'Dadar',
     }
 
     def __init__(self):

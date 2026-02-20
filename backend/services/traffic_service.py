@@ -14,12 +14,8 @@ OSRM_BASE      = 'https://router.project-osrm.org'
 HEADERS = {'User-Agent': 'ClgBuddy-App/1.0 (student commute assistant)'}
 
 # ---------------------------------------------------------------------------
-# Pre-geocoded coordinates for every Mumbai Central Line station.
-# Format : [longitude, latitude]   (OSRM uses lng,lat order)
-# Having these hardcoded means ZERO API calls for station-to-station legs.
-# ---------------------------------------------------------------------------
 STATION_COORDS = {
-    'CSMT':           [72.8347, 18.9399],
+    # Central Line
     'Masjid':         [72.8375, 18.9466],
     'Sandhurst Road': [72.8396, 18.9528],
     'Byculla':        [72.8394, 18.9757],
@@ -45,7 +41,54 @@ STATION_COORDS = {
     'Dombivli':       [73.0875, 19.2144],
     'Thakurli':       [73.0983, 19.2185],
     'Kalyan':         [73.1291, 19.2437],
+
+    # Western Line
+    'Churchgate':     [72.8275, 18.9322],
+    'Marine Lines':   [72.8268, 18.9446],
+    'Charni Road':    [72.8183, 18.9518],
+    'Grant Road':     [72.8160, 18.9632],
+    'Mumbai Central': [72.8191, 18.9690],
+    'Mahalaxmi':      [72.8242, 18.9825],
+    'Lower Parel':    [72.8286, 18.9953],
+    'Prabhadevi':     [72.8335, 19.0163],
+    'Matunga Road':   [72.8458, 19.0298],
+    'Mahim':          [72.8407, 19.0406],
+    'Bandra':         [72.8400, 19.0553],
+    'Khar Road':      [72.8386, 19.0697],
+    'Santacruz':      [72.8384, 19.0818],
+    'Vile Parle':     [72.8436, 19.1006],
+    'Andheri':        [72.8465, 19.1197],
+    'Jogeshwari':     [72.8488, 19.1415],
+    'Goregaon':       [72.8488, 19.1646],
+    'Malad':          [72.8462, 19.1860],
+    'Kandivali':      [72.8523, 19.2045],
+    'Borivali':       [72.8562, 19.2290],
+    'Dahisar':        [72.8624, 19.2494],
+    'Mira Road':      [72.8679, 19.2818],
+    'Bhayandar':      [72.8584, 19.3106],
+    'Naigaon':        [72.8475, 19.3524],
+    'Vasai Road':     [72.8324, 19.3823],
+    'Nallasopara':    [72.8183, 19.4177],
+    'Virar':          [72.8058, 19.4552],
+
+    # Harbour Line
+    'Wadala Road':    [72.8631, 19.0166],
+    'Chunabhatti':    [72.8718, 19.0494],
+    'Chembur':        [72.8953, 19.0617],
+    'Govandi':        [72.9152, 19.0538],
+    'Mankhurd':       [72.9360, 19.0483],
     'Vashi':          [72.9987, 19.0799],
+    'Sanpada':        [73.0116, 19.0664],
+    'Juinagar':       [73.0177, 19.0560],
+    'Nerul':          [73.0183, 19.0345],
+    'Seawoods':       [73.0192, 19.0185],
+    'Belapur':        [73.0375, 19.0181],
+    'Kharghar':       [73.0690, 19.0267],
+    'Mansarovar':     [73.0858, 19.0188],
+    'Khandeshwar':    [73.0991, 19.0122],
+    'Panvel':         [73.1166, 18.9904],
+
+    # Trans-Harbour Line
     'Turbhe':         [73.0163, 19.0782],
     'Koparkhairane':  [73.0016, 19.1030],
     'Ghansoli':       [72.9991, 19.1245],
