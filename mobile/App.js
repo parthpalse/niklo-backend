@@ -126,8 +126,8 @@ function MainScreen({ profile, onReset }) {
     setLoading(true);
     setResult(null);
     try {
-      // Fire both requests in parallel
-      const [plan, mlRes] = await Promise.allSettled([
+      // Fire both requests in parallel using Promise.all
+      const [plan, predictionReq] = await Promise.all([
         postJSON(`${API_URL}/api/commute`, {
           origin: profile.home,
           arrival_time: profile.arrival_time,
@@ -136,24 +136,17 @@ function MainScreen({ profile, onReset }) {
         postJSON(`${API_URL}/api/predict`, {
           time: profile.arrival_time,
           day_of_week: day,
-        }),
+        }).catch(err => null)
       ]);
 
-      if (plan.status === 'rejected') {
-        const err = plan.reason;
-        if (err.name === 'AbortError') {
-          Alert.alert('Timed Out', 'Server took > 60 s. Try again later.');
-        } else {
-          Alert.alert('Error', 'Could not fetch commute plan. Is the backend running?');
-        }
-        return;
+      const prediction = predictionReq ? predictionReq.predicted_duration_mins : null;
+      setResult({ ...plan, prediction });
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        Alert.alert('Timed Out', 'Server took > 60 s. Try again later.');
+      } else {
+        Alert.alert('Error', 'Could not fetch commute plan. Is the backend running?');
       }
-
-      const prediction = mlRes.status === 'fulfilled'
-        ? mlRes.value.predicted_duration_mins
-        : null;
-
-      setResult({ ...plan.value, prediction });
     } finally {
       setLoading(false);
     }
@@ -222,8 +215,8 @@ function MainScreen({ profile, onReset }) {
             Recommended: {result.recommendation === 'Train' ? '🚆 Train' : '🚗 Road'}
           </Text>
 
-          {/* Train route card — only render if train_route is not null */}
-          {result.train_route ? (
+          {/* Train route card — only render if train_route !== null */}
+          {result.train_route !== null ? (
             <View style={[styles.routeCard, result.recommendation === 'Train' && styles.winnerCard]}>
               <Text style={styles.cardTitle}>🚆 Train Route</Text>
               <Text style={styles.leaveAt}>Leave by {result.train_route.leave_at}</Text>
