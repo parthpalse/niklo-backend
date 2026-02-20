@@ -72,7 +72,7 @@ function SetupScreen({ onSave }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.setupScroll}>
-        <Text style={styles.header}>NikLo 🚆</Text>
+        <Text style={styles.header}>ClgBuddy 🚆</Text>
         <Text style={styles.subHeader}>Set up once — we remember forever</Text>
 
         <View style={styles.card}>
