@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
+import logging
 
 from services.traffic_service import TrafficService, VIDYAVIHAR_TO_KJSCE_WALK_MINS
 from services.train_service import TrainService
 from config import Config
+
+logger = logging.getLogger(__name__)
 
 
 class CommuteService:
@@ -99,6 +102,12 @@ class CommuteService:
             datetime.strptime(arrival_time_str, '%H:%M').time()
         )
 
+        # FIX: Clamp delay_buffer_mins to [0, 60].
+        # WHY: A corrupt or malicious value (e.g. 9999 or -30) would push
+        #      the departure time into the previous day or skip all trains.
+        #      60 minutes is a generous upper bound for Mumbai local delays.
+        delay_buffer_mins = max(0, min(60, delay_buffer_mins))
+
         # ── Road-only route ──────────────────────────────────────────
         road_trip = self.traffic.get_travel_time(origin, self.DESTINATION)
         if 'error' in road_trip:
@@ -125,6 +134,16 @@ class CommuteService:
             leg1 = self.traffic.get_travel_time(
                 origin, f"{origin_station} Railway Station, Mumbai"
             )
+            # FIX: Log a warning when leg1 road lookup fails.
+            # WHY: Silently defaulting to 15 mins is a reasonable fallback,
+            #      but without a log you'd never know the geocoding or OSRM
+            #      call failed — makes debugging production issues very hard.
+            if 'error' in leg1:
+                logger.warning(
+                    "Leg1 road lookup failed for '%s' → '%s Station': %s. "
+                    "Defaulting to 15 mins.",
+                    origin, origin_station, leg1['error']
+                )
             leg1_mins = (leg1['duration_seconds'] / 60
                          if 'error' not in leg1 else 15)
 

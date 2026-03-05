@@ -12,7 +12,11 @@ const KEY_DELAY_LOG = 'niklo_delay_log';     // { 0:[10,8,…], 1:[…], … }  
 const MAX_DELAY_ENTRIES = 4;                  // keep last 4 per day
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const TIMEOUT_MS = 60_000;
+// FIX: Extended timeout from 60s → 90s for Render free tier cold starts.
+// WHY: Render free tier sleeps after 15 min inactivity. Cold start takes ~30s
+//      to spin up Python + install deps. 60s was too tight — users saw
+//      "Timed Out" on first tap after waking the server.
+const TIMEOUT_MS = 90_000;
 
 async function postJSON(url, body) {
   const controller = new AbortController();
@@ -118,6 +122,13 @@ function MainScreen({ profile, onReset }) {
     AsyncStorage.getItem(KEY_DELAY_LOG).then(raw => {
       if (raw) setDelayLog(JSON.parse(raw));
     });
+
+    // FIX: Warm-up ping to /health on screen mount.
+    // WHY: Render free tier sleeps after 15 min inactivity. This fires a
+    //      lightweight GET to /health as soon as the user opens the app,
+    //      so the server is already awake by the time they tap "Calculate".
+    //      We don't await it or show errors — it's a silent background ping.
+    fetch(`${API_URL}/health`, { method: 'GET' }).catch(() => { });
   }, []);
 
   const predictedDelay = avgDelay(delayLog, day);
@@ -143,7 +154,13 @@ function MainScreen({ profile, onReset }) {
       setResult({ ...plan, prediction });
     } catch (err) {
       if (err.name === 'AbortError') {
-        Alert.alert('Timed Out', 'Server took > 60 s. Try again later.');
+        // FIX: More helpful timeout message for cold starts.
+        // WHY: Users don't know what "cold start" means. This message tells
+        //      them to wait and retry, instead of thinking the app is broken.
+        Alert.alert(
+          'Server Waking Up ☕',
+          'The server was sleeping (free tier). It\'s booting now — please wait 10 seconds and tap Calculate again.'
+        );
       } else {
         Alert.alert('Error', 'Could not fetch commute plan. Is the backend running?');
       }

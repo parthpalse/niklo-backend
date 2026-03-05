@@ -56,7 +56,15 @@ def get_commute_plan():
     data = request.json or {}
     origin = data.get('origin')
     arrival_time = data.get('arrival_time')          # "HH:MM"
-    delay_buffer_mins = int(data.get('delay_buffer_mins', 0))
+    # FIX: Clamp delay_buffer_mins at the API layer (defense in depth).
+    # WHY: Even though commute_service also clamps, validating at the API
+    #      boundary catches bad input early and returns a clear 400 error
+    #      instead of silently clamping.
+    try:
+        delay_buffer_mins = int(data.get('delay_buffer_mins', 0))
+        delay_buffer_mins = max(0, min(60, delay_buffer_mins))
+    except (ValueError, TypeError):
+        delay_buffer_mins = 0
 
     if not origin or not arrival_time:
         return jsonify({'error': 'origin and arrival_time are required'}), 400
@@ -90,7 +98,15 @@ def predict_commute():
 
     try:
         dt = datetime.strptime(time_str, '%H:%M')
-        prediction = ml_service.predict_commute_time(dt.hour, dt.minute, int(day))
+        # FIX: Validate day_of_week is in [0, 6].
+        # WHY: Passing day_of_week=99 sends a feature value the model has
+        #      never seen during training → garbage prediction. ML models
+        #      don't raise errors on out-of-range inputs, they just silently
+        #      return nonsense.
+        day_int = int(day)
+        if not (0 <= day_int <= 6):
+            return jsonify({'error': 'day_of_week must be 0 (Mon) to 6 (Sun)'}), 400
+        prediction = ml_service.predict_commute_time(dt.hour, dt.minute, day_int)
         return jsonify({'predicted_duration_mins': prediction}), 200
     except ValueError:
         return jsonify({'error': 'time must be HH:MM format'}), 400

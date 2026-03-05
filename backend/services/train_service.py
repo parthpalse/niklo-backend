@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +51,13 @@ class TrainService:
         origin = 'CSMT' if direction == 'up' else 'Kalyan'
 
         schedule = []
-        base = datetime.now().replace(hour=4, minute=0, second=0, microsecond=0)
+        # FIX: Use a fixed reference date instead of datetime.now().
+        # WHY: datetime.now() means if the server stays up past midnight,
+        #      the schedule silently re-anchors to the NEXT day's date when
+        #      TrainService is re-instantiated, but existing in-memory
+        #      schedule objects still have yesterday's dates → stale comparisons.
+        #      A fixed epoch date avoids this; only the HH:MM matters.
+        base = datetime(2000, 1, 1, 4, 0, 0)  # fixed reference, only time matters
         end  = base + timedelta(hours=20)
 
         current = base
@@ -82,6 +91,14 @@ class TrainService:
             si = STATION_ORDER.index(source)
             di = STATION_ORDER.index(destination)
         except ValueError:
+            # FIX: Log a warning when an unknown station falls through.
+            # WHY: Silent fallback to 'up' can give the user a train going
+            #      the WRONG direction — a silent data bug that's very hard
+            #      to debug without logs.
+            logger.warning(
+                "Unknown station in direction lookup: source='%s', dest='%s'. "
+                "Defaulting to 'up'.", source, destination
+            )
             return 'up'  # fallback
         return 'up' if di > si else 'dn'
 
