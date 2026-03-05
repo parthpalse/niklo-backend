@@ -111,8 +111,13 @@ class CommuteService:
         # ── Road-only route ──────────────────────────────────────────
         road_trip = self.traffic.get_travel_time(origin, self.DESTINATION)
         if 'error' in road_trip:
-            return {'error': f"Traffic API error: {road_trip['error']}"}
-
+            logger.warning("Road-only OSRM failed, using 30-min estimate: %s", road_trip['error'])
+            road_trip = {
+                'duration_seconds': 1800,
+                'duration_text': '~30 mins (est)',
+                'distance_text': 'est',
+                'fallback': True
+            }
         road_mins       = road_trip['duration_seconds'] / 60
         road_depart_dt  = arrival_dt - timedelta(minutes=road_mins)
 
